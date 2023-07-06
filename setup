@@ -1,37 +1,39 @@
 #!/bin/bash
 
 usage() {
-	cat <<EOF
-Usage of "$0"
+    cols=$(tput cols || echo 80)
+    cat <<EOF | fmt -sw $((cols < 80 ? cols : 80))
+usage of "$0"
 A small utility to link and copy files across the system (a more general system that can be used to manage dotfiles)
 
-Options:
+options:
     -h, --help	Show this help
+    --status    Shows currently tracked scripts
 
-Directives:
+directives:
     A directive starts with the keyword "[Script]", this can be placed for example inside a line comment. Then must follow one of the following directives
 
-    @Link TARGET
+    "[Script] @Link TARGET"
         Link a script file to a target destination. Creates missing folders.
 
-    @Copy TARGET
+    "[Script] @Copy TARGET"
         Copy a script file to a target destination, removing the copy declaration. Creates missing folders.
 
-Paths:
-    The following variables are expanded inside directives arguments.
+    patterns:
+        The following variables are expanded inside directives arguments.
 
-    Pattern   | Description
-    ---------------------------------
-    ~         | Home folder
-    %f        | Script base name
-    %r        | Script relative path
-    %p        | Script absolute path
-
+        Pattern   | Description
+        ----------------------------------------
+        ~         | home folder
+        %f        | current script base name
+        %r        | current script relative path
+        %p        | current script absolute path
 EOF
 }
 
 # Setup
 
+# This file stores all tracked files (just for reference)
 SCRIPT_STORE="$HOME/.cache/scripts-store"
 
 mkdir -p "$(dirname "$SCRIPT_STORE")"
@@ -64,8 +66,11 @@ directive_link() {
 	
 	scriptRealpath="$(realpath "$1")"
 
+    # create the target path if missing
 	mkdir -p "$(dirname "$2")"
-	ln -sf "$scriptRealpath" "$2"
+	
+    # link the script to the target path
+    ln -sf "$scriptRealpath" "$2"
 
 	printf '"%s" -> "%s"\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
 }
@@ -73,8 +78,11 @@ directive_link() {
 directive_copy() {
 	printf 'Copied "%s" from "%s"\n' "$2" "$1"
 	
+    # create the target path if missing
 	mkdir -p "$(dirname "$2")"
-	grep -v -F '[Script]' "$1" > "$2"
+	
+    # copy file to target skipping lines with the "[Script]" directive
+    grep -v -F '[Script]' "$1" > "$2"
 
 	printf '"%s" -> "%s"\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
 }
