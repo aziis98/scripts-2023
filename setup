@@ -62,30 +62,26 @@ finalize_store() {
 # Directives
 
 directive_link() {
-	scriptRealpath="$(realpath "$1")"
-
-    # create the target path if missing
+	# create the target path if missing
 	mkdir -p "$(dirname "$2")"
-	
-    # link the script to the target path
-    ln -sf "$scriptRealpath" "$2"
 
-	printf '"%s" -> "%s"\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
-	
+	scriptRealpath="$(realpath "$1")"
+	# link the script to the target path
+	ln -sf "$scriptRealpath" "$2"
+
+	printf '%s -> %s (link)\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
 	printf 'Linked "%s" to "%s"\n' "$2" "$1"
 }
 
 directive_copy() {
-	scriptRealpath="$(realpath "$1")"
-
-    # create the target path if missing
+	# create the target path if missing
 	mkdir -p "$(dirname "$2")"
-	
-    # copy file to target skipping lines with the "[Script]" directive
-    grep -v -F '[Script]' "$scriptRealpath" > "$2"
 
-	printf '"%s" -> "%s"\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
-	
+	scriptRealpath="$(realpath "$1")"
+	# copy file to target skipping lines with the "[Script]" directive
+	grep -v -F '[Script]' "$scriptRealpath" > "$2"
+
+	printf '%s -> %s (copy)\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
 	printf 'Copied "%s" from "%s"\n' "$2" "$1"
 }
 
