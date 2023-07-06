@@ -1,0 +1,4 @@
+#!/bin/bash
+# [NoAScript] @Link ~/.local/bin/example
+
+echo 'Example'

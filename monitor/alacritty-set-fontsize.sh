@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# [Script] @Link ~/.local/bin/alacritty-set-fontsize
 
 if [[ "$#" -eq 0 ]]; then
 	cat <<EOF

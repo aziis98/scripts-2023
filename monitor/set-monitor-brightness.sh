@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# [Script] @Link ~/.local/bin/set-monitor-brightness
 
 if [[ $# -eq 0 ]]; then
 	echo "Usage: $0 [--notify] <BRIGHTNESS_VALUE>"

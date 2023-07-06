@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# [Script] @Link ~/.local/bin/%f
+# [Script] @Link ~/.local/bin/recent
 
 # Function to display the help message
 display_help() {

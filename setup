@@ -62,8 +62,6 @@ finalize_store() {
 # Directives
 
 directive_link() {
-	printf 'Linked "%s" to "%s"\n' "$2" "$1"
-	
 	scriptRealpath="$(realpath "$1")"
 
     # create the target path if missing
@@ -73,23 +71,27 @@ directive_link() {
     ln -sf "$scriptRealpath" "$2"
 
 	printf '"%s" -> "%s"\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
+	
+	printf 'Linked "%s" to "%s"\n' "$2" "$1"
 }
 
 directive_copy() {
-	printf 'Copied "%s" from "%s"\n' "$2" "$1"
-	
+	scriptRealpath="$(realpath "$1")"
+
     # create the target path if missing
 	mkdir -p "$(dirname "$2")"
 	
     # copy file to target skipping lines with the "[Script]" directive
-    grep -v -F '[Script]' "$1" > "$2"
+    grep -v -F '[Script]' "$scriptRealpath" > "$2"
 
 	printf '"%s" -> "%s"\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
+	
+	printf 'Copied "%s" from "%s"\n' "$2" "$1"
 }
 
 # Parse recursively current folder
 
-grep --exclude=setup -r -F '[Script]' . | \
+grep --exclude=setup --exclude=README.md -r -F '[Script]' . | \
 while read scriptDeclaration; do
 	scriptFile="$(echo "$scriptDeclaration"| cut -d ':' -f 1)"
 	scriptDirective="$(echo "$scriptDeclaration"| sed -E 's|(.*)\[Script\] ||g')"

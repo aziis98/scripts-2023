@@ -1,0 +1,9 @@
+; [Script] @Copy ~/.local/share/applications/%f
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Terminal=false
+Exec=/home/aziis98/.local/bin/set-monitor-brightness --notify 100
+Name=Brightness to 100%
+Icon=video-display-symbolic.symbolic.png
