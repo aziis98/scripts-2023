@@ -5,14 +5,9 @@ Yet another scripts repo, now for 2023.
 ## Usage
 
 ```bash shell
-# Install script to their target locations
-$ ./setup
-
-# After first run lists locations of installed scripts
-$ ./setup --status
-
-# See directive syntax
-$ ./setup --help
+$ ./setup # install scripts
+$ ./setup --help # get help
+$ ./setup --status # after first run lists script locations
 ```
 
 ## Syntax
