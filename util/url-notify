@@ -1,0 +1,147 @@
+#!/bin/bash
+# [Script] @Link ~/.local/bin/url-notify
+
+# Check if URL is provided
+if [ -z "$1" ]; then
+  echo "usage: $0 <url>"
+  exit 1
+fi
+
+# Set cache directory using XDG variable
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/url-notify"
+mkdir -p "$cache_dir"
+
+# Default values
+interval="30s"
+telegram_bot_token=""
+telegram_user_ids=()
+unsafe="false"
+notify_send="false"
+
+# Function to display help message
+display-help() {
+  echo "Usage: $0 [OPTIONS] <url>"
+  echo
+  echo "Options:"
+  echo "  -n, --notify-send       Enable notify-send notifications"
+  echo "  -b, --telegram-bot      Enable Telegram bot notifications, specify bot token"
+  echo "  -i, --interval          Specify interval (default: \"30s\")"
+  echo "  -u, --telegram-user-id  Specify one or more Telegram user IDs"
+  echo "  -k, --unsafe            Disable SSL verification (unsafe)"
+  echo "  -h, --help              Display this help message"
+}
+
+# Parse Telegram bot information
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --telegram-bot | -b)
+      telegram_bot_token="$2"
+      shift 2
+      ;;
+    --interval | -i)
+      interval="$2"
+      shift 2
+      ;;
+    --telegram-user-id | -u)
+      telegram_user_ids+=("$2")
+      shift 2
+      ;;
+    --unsafe | -k)
+      unsafe="true"
+      shift 1
+      ;;
+    --notify-send | -n)
+      notify_send="true"
+      shift 1
+      ;;
+    --help | -h)
+      display-help
+      exit 0
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+curl_command="curl -sL"
+
+if [ "$unsafe" = "true" ]; then
+  echo "warning: ssl verification is disabled"
+  echo "warning: this is unsafe and should only be used for testing purposes"
+  echo
+  
+  curl_command="$curl_command -k"
+fi
+
+# url to human readable slug
+url_to_slug() {
+  hash_part=$(echo "$1" \
+  | md5sum \
+  | awk '{print $1}' \
+  | cut -c 1-10)
+
+  readable_part=$(echo "$1" \
+  | sed -e 's/[^A-Za-z0-9-]/-/g' \
+  | sed -e 's/--*/-/g' \
+  | sed -e 's/^-//' \
+  | sed -e 's/-$//' \
+  | tr "[:upper:]" "[:lower:]" \
+  | cut -c 1-60 \
+  | sed -e 's/-$//' \
+  | sed -e 's/^-//')
+
+  echo "${readable_part}_${hash_part}"
+}
+
+# Function to send notification
+send_notification() {
+  if [ "$telegram_bot_token" ]; then
+    message="Website content changed:"
+    link="[$url]($url)"
+
+    for user_id in "${telegram_user_ids[@]}"; do
+      $curl_command "https://api.telegram.org/bot$telegram_bot_token/sendMessage" \
+        --data "chat_id=$user_id&text=$message%0A%0A$link&parse_mode=Markdown"
+    done
+  fi
+  if [ "$notify_send" = "true" ]; then
+    # use notify-send to send a notification, add an icon of a globe, the title is "url-notify" and the message is "Website content changed: $url" 
+    notify-send -i network-receive "url-notify" "Website content changed: $url"
+  fi
+}
+
+# Set URL and cache file
+url="$1"
+cache_file="$cache_dir/$(url_to_slug "$url")"
+
+echo "Setting up cache file: $cache_file"
+
+# Initial request and cache
+if ! $curl_command "$url" > "$cache_file"; then
+  echo "Failed to make initial request: $url"
+  exit 1
+fi
+
+echo "Checking \"$url\" every $interval"
+
+# Main loop
+while true; do
+  echo "Checking \"$url\""
+
+  # Make request
+  new_content="$($curl_command "$url")"
+
+  # Check if content has changed
+  if ! cmp --silent "$cache_file" <(echo "$new_content"); then
+    # Update cache
+    echo "$new_content" > "$cache_file"
+    echo "Website content changed: $url"    
+
+    # Send notification
+    send_notification
+  fi
+
+  echo "Checking again in $interval"
+  sleep "$interval"
+done
