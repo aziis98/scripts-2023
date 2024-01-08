@@ -9,4 +9,4 @@ EOF
 	exit 1
 fi
 
-sed -Ei -e "s/size: [0-9]+(\.[0-9]*)?/size: $1/" ~/.config/alacritty/alacritty.yml
+sed -Ei -e "s/size = [0-9]+(\.[0-9]*)?/size = $1/" "$HOME/.config/alacritty/alacritty.toml"

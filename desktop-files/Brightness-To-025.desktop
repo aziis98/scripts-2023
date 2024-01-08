@@ -4,6 +4,6 @@ Encoding=UTF-8
 Version=1.0
 Type=Application
 Terminal=false
-Exec=/home/aziis98/.local/bin/set-monitor-brightness --notify 25
+Exec=/home/aziis98/.local/bin/set-display-brightness --notify 25
 Name=Brightness to 25%
 Icon=video-display-symbolic.symbolic.png

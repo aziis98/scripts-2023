@@ -44,7 +44,7 @@ touch "$SCRIPT_STORE"
 if [[ "$#" -gt 0 ]]; then
 	if [[ "$1" = '--status' || "$1" = '-s' ]]; then
 		printf 'Current Setup:\n'
-		cat "$SCRIPT_STORE"
+		column -t "$SCRIPT_STORE"
 		exit 0
 	elif [[ "$1" = '--help' || "$1" = '-h' ]]; then
 		usage
@@ -72,7 +72,7 @@ directive_link() {
 	# link the script to the target path
 	ln -sf "$scriptRealpath" "$2"
 
-	printf '%s -> %s (link)\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
+	printf 'LINK\t%s\t%s\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
 	printf 'Linked "%s" to "%s"\n' "$2" "$1"
 }
 
@@ -84,7 +84,7 @@ directive_copy() {
 	# copy file to target skipping lines with the "[Script]" directive
 	grep -v -F '[Script]' "$scriptRealpath" > "$2"
 
-	printf '%s -> %s (copy)\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
+	printf 'COPY\t%s\t%s\n' "$2" "$scriptRealpath" >> "$SCRIPT_STORE"
 	printf 'Copied "%s" from "%s"\n' "$2" "$1"
 }
 
